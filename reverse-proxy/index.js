@@ -16,7 +16,7 @@ const s3Client = new S3Client({
     }
 })
 
-const S3_BUCKET = process.env.S3_BUCKET || 'vercel-clone-outputs'
+const S3_BUCKET = process.env.S3_BUCKET
 const BASE_PREFIX = '__outputs'
 
 // ── Helper: stream a file from S3 to the browser ─────────────────────────────

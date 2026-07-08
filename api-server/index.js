@@ -1,7 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const { spawn } = require('child_process')
+
 const Redis = require('ioredis')
 
 const app = express()
@@ -11,11 +11,7 @@ app.use(express.json())
 const path = require('path')
 
 const PORT = process.env.PORT || 9000
-const BUILD_SERVER_IMAGE  = process.env.BUILD_SERVER_IMAGE || 'build-server'
-// Absolute path to build-server/.env — Docker reads all secrets (AWS, Redis, S3) from here.
-// Override via BUILD_SERVER_ENV_FILE in api-server/.env if your folder layout differs.
-const BUILD_SERVER_ENV_FILE = process.env.BUILD_SERVER_ENV_FILE
-    || path.resolve(__dirname, '..', 'build-server', '.env')
+
 
 // ── Redis helper ──────────────────────────────────────────────────────────────
 // A Redis connection in subscribe mode is dedicated — it can ONLY subscribe.
@@ -61,51 +57,46 @@ app.post('/project', async (req, res) => {
         })
     }
 
-    // ── Build the docker run command ──────────────────────────────────────────
-    // Secrets (AWS keys, Redis URL, S3 bucket) come from build-server/.env via
-    // --env-file so they never appear in logs or process listings.
-    // Only the dynamic per-deployment values are passed as individual -e flags.
-    const dockerArgs = [
-        'run',
-        '--rm',
-        '--name', `deploy-${projectId}-${Date.now()}`,  // unique name avoids conflicts
-        '--env-file', BUILD_SERVER_ENV_FILE,             // ← secrets loaded from file
-    ]
+    // ── Trigger GitHub Actions workflow ─────────────────────────────────────────
+    const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+    const GITHUB_ORG_REPO = process.env.GITHUB_ORG_REPO || '0xRakkesh/web3deploy'
 
-    // Dynamic values that change per deployment
-    const dynamicEnv = {
-        GIT_REPO_URL:    gitRepoUrl,
-        PROJECT_ID:      projectId,
-        ROOT_DIR:        rootDir,
-        FRAMEWORK:       framework,
-        INSTALL_COMMAND: installCommand,
-        BUILD_COMMAND:   buildCommand,
-        OUTPUT_DIR:      outputDir
+    if (!GITHUB_TOKEN) {
+        console.error(`[deploy] Missing GITHUB_TOKEN in env! Builds will fail.`)
     }
-
-    for (const [key, value] of Object.entries(dynamicEnv)) {
-        if (value) dockerArgs.push('-e', `${key}=${value}`)
-    }
-
-    dockerArgs.push(BUILD_SERVER_IMAGE)
 
     console.log(`\n[deploy] Starting build for: ${projectId}`)
-    console.log(`[deploy] git: ${gitRepoUrl}`)           // no secrets in logs
-    console.log(`[deploy] env-file: ${BUILD_SERVER_ENV_FILE}\n`)
+    console.log(`[deploy] git: ${gitRepoUrl}`)
+    console.log(`[deploy] Triggering GitHub Actions on ${GITHUB_ORG_REPO}\n`)
 
-    // Spawn the container detached so it runs in the background independently.
-    // stdio: 'ignore' because all logs flow through Redis — we don't need stdout here.
-    const docker = spawn('docker', dockerArgs, {
-        detached: true,
-        stdio:    'ignore'
-    })
-
-    // Unref so Node doesn't wait for the child process before exiting
-    docker.unref()
-
-    docker.on('error', (err) => {
-        // This fires if docker binary is not found or similar OS-level issues
-        console.error(`[deploy] Docker spawn error for ${projectId}:`, err.message)
+    fetch(`https://api.github.com/repos/${GITHUB_ORG_REPO}/actions/workflows/build.yml/dispatches`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'w3deploy-api-server'
+        },
+        body: JSON.stringify({
+            ref: 'main',
+            inputs: {
+                projectId,
+                gitRepoUrl,
+                rootDir,
+                framework,
+                installCommand,
+                buildCommand,
+                outputDir
+            }
+        })
+    }).then(async (response) => {
+        if (!response.ok) {
+            const errBody = await response.text()
+            console.error(`[deploy] GitHub Actions trigger failed: ${response.status} ${errBody}`)
+        } else {
+            console.log(`[deploy] Successfully triggered GitHub Actions for ${projectId}`)
+        }
+    }).catch(err => {
+        console.error(`[deploy] Error calling GitHub API:`, err.message)
     })
 
     return res.status(202).json({
