@@ -1,0 +1,73 @@
+.footer {
+  border-top: 1px solid var(--card-border);
+  background: rgba(10, 14, 8, 0.9);
+  padding: 2rem 2rem;
+}
+
+.footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer__name {
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.footer__links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer__links a {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer__links button {
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footer__links a:hover,
+.footer__links button:hover {
+  color: var(--text-primary);
+}
+
+.footer__copy {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 600px) {
+  .footer__inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  .footer__links {
+    gap: 1rem;
+  }
+}
