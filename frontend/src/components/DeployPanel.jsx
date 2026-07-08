@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { animate, stagger } from 'animejs'
 import './DeployPanel.css'
 
-const API = 'http://localhost:9000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:9000'
 
 export default function DeployPanel() {
   const [projectId, setProjectId] = useState('')

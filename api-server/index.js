@@ -99,11 +99,14 @@ app.post('/project', async (req, res) => {
         console.error(`[deploy] Error calling GitHub API:`, err.message)
     })
 
+    const PROXY_DOMAIN = process.env.PROXY_DOMAIN || 'localhost:8000'
+    const protocol = PROXY_DOMAIN.startsWith('localhost') ? 'http' : 'https'
+
     return res.status(202).json({
         status:    'queued',
         projectId,
         logsUrl:   `GET /project/${projectId}/logs`,
-        previewUrl: `http://${projectId}.localhost:8000`
+        previewUrl: `${protocol}://${projectId}.${PROXY_DOMAIN}`
     })
 })
 
