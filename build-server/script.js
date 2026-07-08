@@ -27,10 +27,6 @@ publisher.on('error', (err) => {
     console.error('Redis connection error:', err.message)
 })
 
-publisher.on('end', () => {
-    console.error('FATAL: Redis connection closed unexpectedly.')
-    process.exit(1)
-})
 
 // ── S3 ────────────────────────────────────────────────────────────────────────
 const s3Client = new S3Client({
