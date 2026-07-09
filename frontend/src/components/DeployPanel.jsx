@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ChevronRight, RefreshCw, ArrowUpRight } from 'lucide-react'
 import { animate, stagger } from 'animejs'
 import './DeployPanel.css'
 
@@ -216,7 +218,9 @@ export default function DeployPanel() {
           onClick={() => setShowAdvanced(v => !v)}
           aria-expanded={showAdvanced}
         >
-          <span className={`chevron ${showAdvanced ? 'open' : ''}`}>▸</span>
+          <span className={`chevron ${showAdvanced ? 'open' : ''}`}>
+            <ChevronRight size={14} strokeWidth={3} />
+          </span>
           Advanced Settings
         </button>
 
@@ -250,9 +254,9 @@ export default function DeployPanel() {
             {status === 'building' ? (
               <><span className="spinner" /> Deploying...</>
             ) : status === 'done' ? (
-              <>Redeploy <span className="arrow">↻</span></>
+              <>Redeploy <RefreshCw size={16} strokeWidth={2.5} className="arrow" /></>
             ) : (
-              <>Deploy Now <span className="arrow">→</span></>
+              <>Deploy Now <ArrowUpRight size={16} strokeWidth={2.5} className="arrow" /></>
             )}
           </button>
           
@@ -264,7 +268,7 @@ export default function DeployPanel() {
               className="deploy-btn" 
               style={{ flex: 1, textDecoration: 'none', background: '#fff', color: '#0e1a0e', border: '2.5px solid #0e1a0e' }}
             >
-              Visit <span className="arrow">↗</span>
+              Visit <ArrowUpRight size={16} strokeWidth={2.5} className="arrow" />
             </a>
           )}
         </div>

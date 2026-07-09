@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { animate, stagger } from 'animejs'
 import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
 import { HalftoneCmyk } from '@paper-design/shaders-react'
 import BackgroundImg from '../assets/background.png'
 import ComputerImg from '../assets/computer.png'
@@ -71,17 +72,15 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="hero__sub" ref={subRef} style={{ opacity: 0 }}>
-          Push a GitHub repo. We detect your framework,<br />
-          build it, and serve it on a live subdomain.
+          Deploy your ideas into the wild.<br />
+          Beautifully crafted infra for modern web creators.
         </p>
 
         {/* CTA */}
         <div className="hero__cta" ref={ctaRef} style={{ opacity: 0 }}>
           <Link to="/deploy" className="hero__btn-primary">
             Start Deploying
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <ArrowUpRight size={18} strokeWidth={2.5} style={{ marginLeft: '4px' }} />
           </Link>
         </div>
       </div>
