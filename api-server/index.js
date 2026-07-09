@@ -48,7 +48,8 @@ app.post('/project', async (req, res) => {
         framework      = '',
         installCommand = '',
         buildCommand   = '',
-        outputDir      = ''
+        outputDir      = '',
+        envVars        = ''
     } = req.body
 
     if (!projectId || !gitRepoUrl) {
@@ -85,7 +86,8 @@ app.post('/project', async (req, res) => {
                 framework,
                 installCommand,
                 buildCommand,
-                outputDir
+                outputDir,
+                envVars
             }
         })
     }).then(async (response) => {
@@ -99,7 +101,7 @@ app.post('/project', async (req, res) => {
         console.error(`[deploy] Error calling GitHub API:`, err.message)
     })
 
-    const PROXY_DOMAIN = process.env.PROXY_DOMAIN || 'localhost:8000'
+    const PROXY_DOMAIN = process.env.PROXY_DOMAIN || 'web3deploy.me'
     const protocol = PROXY_DOMAIN.startsWith('localhost') ? 'http' : 'https'
 
     return res.status(202).json({

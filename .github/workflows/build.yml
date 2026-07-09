@@ -31,6 +31,10 @@ on:
         description: 'Output Directory override (optional)'
         required: false
         type: string
+      envVars:
+        description: 'Environment Variables (optional)'
+        required: false
+        type: string
 
 jobs:
   build:
@@ -61,6 +65,7 @@ jobs:
           INSTALL_COMMAND: ${{ inputs.installCommand }}
           BUILD_COMMAND: ${{ inputs.buildCommand }}
           OUTPUT_DIR: ${{ inputs.outputDir }}
+          ENV_VARS: ${{ inputs.envVars }}
           # Secrets
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

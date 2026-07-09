@@ -12,6 +12,7 @@ export default function DeployPanel() {
   const [installCommand, setInstallCommand] = useState('')
   const [buildCommand, setBuildCommand] = useState('')
   const [outputDir, setOutputDir] = useState('')
+  const [envVars, setEnvVars] = useState('')
 
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [logs, setLogs] = useState([])
@@ -97,6 +98,7 @@ export default function DeployPanel() {
       if (installCommand) body.installCommand = installCommand
       if (buildCommand) body.buildCommand = buildCommand
       if (outputDir) body.outputDir = outputDir
+      if (envVars) body.envVars = envVars
 
       const res = await fetch(`${API}/project`, {
         method: 'POST',
@@ -107,7 +109,7 @@ export default function DeployPanel() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to start build')
 
-      setPreviewUrl(data.previewUrl || `http://${projectId}.localhost:8000`)
+      setPreviewUrl(data.previewUrl || `https://${projectId}.web3deploy.me`)
 
       // SSE log stream
       const es = new EventSource(`${API}/project/${projectId}/logs`)
@@ -116,6 +118,11 @@ export default function DeployPanel() {
         try {
           const { log } = JSON.parse(event.data)
           setLogs(prev => [...prev, log])
+
+          // Pick up the deployed URL published by the build-server
+          if (log.startsWith('Deployed: ')) {
+            setPreviewUrl(log.replace('Deployed: ', '').trim())
+          }
 
           if (log.trim() === 'Done') {
             setStatus('done')
@@ -212,17 +219,54 @@ export default function DeployPanel() {
               <label htmlFor="dp-out">Output Directory</label>
               <input id="dp-out" type="text" value={outputDir} onChange={e => setOutputDir(e.target.value)} placeholder="dist" disabled={status === 'building'} />
             </div>
+            <div className="field field-sm">
+              <label htmlFor="dp-env">Environment Variables</label>
+              <textarea
+                id="dp-env"
+                value={envVars}
+                onChange={e => setEnvVars(e.target.value)}
+                placeholder="VITE_API_URL=https://api.example.com&#10;NEXT_PUBLIC_KEY=value"
+                disabled={status === 'building'}
+                rows={3}
+                style={{
+                  background: 'rgba(0, 0, 0, 0.25)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '6px',
+                  padding: '0.7rem 0.9rem',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                  resize: 'vertical'
+                }}
+              />
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem', fontStyle: 'italic' }}>
+                ⚠️ Warning: Variables injected here will be visible in the deployed static site. Do not include secret API keys.
+              </p>
+            </div>
           </div>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="deploy-btn" disabled={status === 'building'}>
+        <div className="form-actions" style={{ display: 'flex', gap: '1rem' }}>
+          <button type="submit" className="deploy-btn" disabled={status === 'building'} style={{ flex: 1 }}>
             {status === 'building' ? (
               <><span className="spinner" /> Deploying...</>
             ) : (
               <>Deploy Now <span className="arrow">→</span></>
             )}
           </button>
+          
+          {status === 'done' && previewUrl && (
+            <a 
+              href={previewUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="deploy-btn" 
+              style={{ flex: 1, textDecoration: 'none', background: 'var(--text-primary)', color: 'var(--bg-base)' }}
+            >
+              Visit Site <span className="arrow">↗</span>
+            </a>
+          )}
         </div>
       </form>
 

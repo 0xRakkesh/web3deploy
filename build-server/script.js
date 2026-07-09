@@ -313,12 +313,16 @@ async function init() {
     publishLog(divider)
 
     try {
+        const deployedUrl = `https://${PROJECT_ID}.web3deploy.me`
+
         if (config.isStatic) {
             // ── Static site: skip build, upload source files directly ──────────
             publishLog('Static site detected — skipping install & build')
             const { uploaded, failed } = await uploadFolder(PROJECT_ROOT)
-            publishLog(`${divider}`)
-            publishLog(`Done — ${uploaded} uploaded, ${failed} failed`)
+            publishLog(divider)
+            publishLog(`Uploaded: ${uploaded} file(s)${failed ? `, ${failed} failed` : ''}`)
+            publishLog(`Deployed: ${deployedUrl}`)
+            publishLog('Done')
         } else {
             // ── Step 1: Install ────────────────────────────────────────────────
             if (config.installCmd) {
@@ -351,17 +355,19 @@ async function init() {
             publishLog(`Uploading from "${config.outputDir}/"...`)
             const { uploaded, failed } = await uploadFolder(outputPath)
             publishLog(divider)
-            publishLog(`Done — ${uploaded} uploaded, ${failed} failed`)
+            publishLog(`Uploaded: ${uploaded} file(s)${failed ? `, ${failed} failed` : ''}`)
+            publishLog(`Deployed: ${deployedUrl}`)
+            publishLog('Done')
         }
     } catch (err) {
         console.error('\n[ERROR]', err.message)
         publishLog(`error: ${err.message}`)
-        publisher.disconnect()
+        await publisher.quit()
         process.exit(1)
     }
 
     console.log('=== Done ===')
-    publisher.disconnect()
+    await publisher.quit()
 }
 
 init()

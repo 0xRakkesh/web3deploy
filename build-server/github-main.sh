@@ -33,6 +33,11 @@ fi
 export PROJECT_ROOT
 echo "Project root: $PROJECT_ROOT"
 
+if [ -n "$ENV_VARS" ]; then
+    echo "Injecting Environment Variables..."
+    echo "$ENV_VARS" > "$PROJECT_ROOT/.env"
+fi
+
 NODE_VERSION=""
 
 if [ -f "$PROJECT_ROOT/.nvmrc" ]; then
