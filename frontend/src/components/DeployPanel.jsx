@@ -186,6 +186,29 @@ export default function DeployPanel() {
           />
         </div>
 
+        <div className="field">
+          <label htmlFor="dp-env">ENV</label>
+          <textarea
+            id="dp-env"
+            value={envVars}
+            onChange={e => setEnvVars(e.target.value)}
+            placeholder="Warning: Variables injected here will be visible in the deployed static site. Do not include secret API keys."
+            disabled={status === 'building'}
+            rows={3}
+            style={{
+              background: 'rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '6px',
+              padding: '0.55rem 0.75rem',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.85rem',
+              outline: 'none',
+              resize: 'vertical'
+            }}
+          />
+        </div>
+
         {/* Advanced toggle */}
         <button
           type="button"
@@ -219,31 +242,6 @@ export default function DeployPanel() {
               <label htmlFor="dp-out">Output Directory</label>
               <input id="dp-out" type="text" value={outputDir} onChange={e => setOutputDir(e.target.value)} placeholder="dist" disabled={status === 'building'} />
             </div>
-            <div className="field field-sm">
-              <label htmlFor="dp-env">Environment Variables</label>
-              <textarea
-                id="dp-env"
-                value={envVars}
-                onChange={e => setEnvVars(e.target.value)}
-                placeholder="VITE_API_URL=https://api.example.com&#10;NEXT_PUBLIC_KEY=value"
-                disabled={status === 'building'}
-                rows={3}
-                style={{
-                  background: 'rgba(0, 0, 0, 0.25)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '6px',
-                  padding: '0.7rem 0.9rem',
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.85rem',
-                  outline: 'none',
-                  resize: 'vertical'
-                }}
-              />
-              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem', fontStyle: 'italic' }}>
-                ⚠️ Warning: Variables injected here will be visible in the deployed static site. Do not include secret API keys.
-              </p>
-            </div>
           </div>
         )}
 
@@ -251,6 +249,8 @@ export default function DeployPanel() {
           <button type="submit" className="deploy-btn" disabled={status === 'building'} style={{ flex: 1 }}>
             {status === 'building' ? (
               <><span className="spinner" /> Deploying...</>
+            ) : status === 'done' ? (
+              <>Redeploy <span className="arrow">↻</span></>
             ) : (
               <>Deploy Now <span className="arrow">→</span></>
             )}
@@ -262,9 +262,9 @@ export default function DeployPanel() {
               target="_blank" 
               rel="noopener noreferrer" 
               className="deploy-btn" 
-              style={{ flex: 1, textDecoration: 'none', background: 'var(--text-primary)', color: 'var(--bg-base)' }}
+              style={{ flex: 1, textDecoration: 'none', background: '#fff', color: '#0e1a0e', border: '2.5px solid #0e1a0e' }}
             >
-              Visit Site <span className="arrow">↗</span>
+              Visit <span className="arrow">↗</span>
             </a>
           )}
         </div>

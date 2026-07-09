@@ -8,7 +8,8 @@
   gap: 1.5rem;
   width: 100%;
   max-width: 1100px;
-  max-height: calc(100vh - 100px);
+  min-height: 510px;
+  max-height: calc(100vh - 13rem);
 }
 
 /* ── Glass card base ── */
@@ -25,8 +26,9 @@
   padding: 2rem 2rem 1.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 0.85rem;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .form-header {
@@ -51,7 +53,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .field label {
@@ -66,7 +68,7 @@
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  padding: 0.7rem 0.9rem;
+  padding: 0.55rem 0.75rem;
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.85rem;
@@ -199,6 +201,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 .term-chrome {
