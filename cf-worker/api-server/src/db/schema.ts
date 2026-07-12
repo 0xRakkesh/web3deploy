@@ -16,7 +16,7 @@ export const projects = sqliteTable('projects', {
     user_id: text('user_id').references(() => users.id).notNull(),
     github_repo: text('github_repo').notNull(),
     framework: text('framework').notNull(),
-    env_vars: text('env_vars'), // Stored as JSON string
+    env_vars: text('env_vars'),
     build_command: text('build_command').notNull().default('npm run build'),
     install_command: text('install_command').notNull().default('npm install'),
     output_dir: text('output_dir').notNull(),

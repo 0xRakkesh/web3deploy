@@ -4,15 +4,21 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate": "drizzle-kit generate",
+    "db:up": "wrangler d1 migrations apply w3deploy-db --local",
+    "db:up:prod": "wrangler d1 migrations apply w3deploy-db --remote"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.8.0",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.28"
+    "hono": "^4.12.28",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260712.1",
     "drizzle-kit": "^0.31.10",
+    "typescript": "^7.0.2",
     "wrangler": "^4.4.0"
   }
 }

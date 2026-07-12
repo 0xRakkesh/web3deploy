@@ -7,6 +7,10 @@ on:
         description: 'Project ID'
         required: true
         type: string
+      deploymentId:
+        description: 'Deployment ID'
+        required: true
+        type: string
       gitRepoUrl:
         description: 'Git Repository URL'
         required: true
@@ -59,6 +63,7 @@ jobs:
         working-directory: ./build-server
         env:
           PROJECT_ID: ${{ inputs.projectId }}
+          DEPLOYMENT_ID: ${{ inputs.deploymentId }}
           GIT_REPO_URL: ${{ inputs.gitRepoUrl }}
           ROOT_DIR: ${{ inputs.rootDir }}
           FRAMEWORK: ${{ inputs.framework }}
@@ -72,4 +77,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
           REDIS_URL: ${{ secrets.REDIS_URL }}
+          API_SERVICE_TOKEN: ${{ secrets.API_SERVICE_TOKEN }}
+          API_SERVER_URL: ${{ secrets.API_SERVER_URL }}
         run: bash github-main.sh

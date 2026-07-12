@@ -1,9 +1,32 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
+import projectsRouter from "./routes/projects";
+import usersRouter from "./routes/users";
+import deploymentsRouter from "./routes/deployments";
+import logsRouter from "./routes/logs";
+import { rateLimiter, requireAuth, requireAuthOrServiceToken } from "./middleware/index";
 
-const app = new Hono()
+export interface CloudflareBindings {
+  DB: D1Database;
+  JWT_SECRET: string;
+  GITHUB_TOKEN: string;
+  GITHUB_ORG_REPO: string;
+  API_SERVICE_TOKEN: string;
+  UPSTASH_REDIS_REST_URL: string;
+  UPSTASH_REDIS_REST_TOKEN: string;
+}
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+const app = new Hono<{ Bindings: CloudflareBindings }>()
 
-export default app
+app.use('*', rateLimiter);
+
+app.route('/users', usersRouter);
+
+app.use('/projects/*', requireAuth);
+app.use('/logs/*', requireAuth);
+app.use('/deployments/*', requireAuthOrServiceToken);
+
+app.route('/projects', projectsRouter);
+app.route('/deployments', deploymentsRouter);
+app.route('/logs', logsRouter);
+
+export default app;
