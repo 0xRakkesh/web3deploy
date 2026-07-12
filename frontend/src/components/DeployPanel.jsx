@@ -103,13 +103,26 @@ export default function DeployPanel() {
       if (outputDir) body.output_dir = outputDir
       if (envVars) {
         try {
-          // Attempt to parse envVars to ensure it's a valid JSON string before sending
-          const parsedEnv = JSON.parse(envVars)
+          // Parse standard .env format (KEY=VALUE)
+          const parsedEnv = {}
+          const lines = envVars.split('\n')
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed || trimmed.startsWith('#')) continue
+            const eqIndex = trimmed.indexOf('=')
+            if (eqIndex > -1) {
+              const key = trimmed.slice(0, eqIndex).trim()
+              let val = trimmed.slice(eqIndex + 1).trim()
+              // Remove surrounding quotes if present
+              if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1)
+              }
+              parsedEnv[key] = val
+            }
+          }
           body.env_vars = parsedEnv
         } catch (e) {
-          // If not valid JSON, send as string or handle accordingly
-          // The API expects a record, so we should warn the user, but for now we'll just ignore or let it fail
-          throw new Error('ENV variables must be valid JSON, e.g. {"KEY": "VALUE"}')
+          throw new Error('Failed to parse ENV variables. Ensure they are in KEY=VALUE format.')
         }
       }
 
