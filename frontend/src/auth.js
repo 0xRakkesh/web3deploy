@@ -2,16 +2,20 @@ const AUTH_STORAGE_KEY = 'w3deploy.github-authenticated'
 const AUTH_CHANGE_EVENT = 'w3deploy-auth-change'
 
 export function isAuthenticated() {
-  return window.localStorage.getItem(AUTH_STORAGE_KEY) === 'true'
+  return !!window.localStorage.getItem(AUTH_STORAGE_KEY)
+}
+
+export function getToken() {
+  return window.localStorage.getItem(AUTH_STORAGE_KEY)
 }
 
 function notifyAuthChange() {
   window.dispatchEvent(new Event(AUTH_CHANGE_EVENT))
 }
 
-export function setAuthenticated(value) {
-  if (value) {
-    window.localStorage.setItem(AUTH_STORAGE_KEY, 'true')
+export function setAuthenticated(token) {
+  if (token) {
+    window.localStorage.setItem(AUTH_STORAGE_KEY, token)
     notifyAuthChange()
     return
   }

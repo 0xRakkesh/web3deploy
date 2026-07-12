@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, RefreshCw, ArrowUpRight } from 'lucide-react'
 import { animate, stagger } from 'animejs'
+import { getToken } from '../auth'
 import './DeployPanel.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:9000'
@@ -94,56 +95,77 @@ export default function DeployPanel() {
     setPreviewUrl('')
 
     try {
-      const body = { projectId, gitRepoUrl: repoUrl }
-      if (rootDir) body.rootDir = rootDir
+      const body = { project_id: projectId, github_repo: repoUrl }
+      if (rootDir) body.root_dir = rootDir
       if (framework) body.framework = framework
-      if (installCommand) body.installCommand = installCommand
-      if (buildCommand) body.buildCommand = buildCommand
-      if (outputDir) body.outputDir = outputDir
-      if (envVars) body.envVars = envVars
+      if (installCommand) body.install_command = installCommand
+      if (buildCommand) body.build_command = buildCommand
+      if (outputDir) body.output_dir = outputDir
+      if (envVars) {
+        try {
+          // Attempt to parse envVars to ensure it's a valid JSON string before sending
+          const parsedEnv = JSON.parse(envVars)
+          body.env_vars = parsedEnv
+        } catch (e) {
+          // If not valid JSON, send as string or handle accordingly
+          // The API expects a record, so we should warn the user, but for now we'll just ignore or let it fail
+          throw new Error('ENV variables must be valid JSON, e.g. {"KEY": "VALUE"}')
+        }
+      }
 
-      const res = await fetch(`${API}/project`, {
+      const res = await fetch(`${API}/projects`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
         body: JSON.stringify(body),
       })
 
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to start build')
 
-      setPreviewUrl(data.previewUrl || `https://${projectId}.web3deploy.me`)
-
-      // SSE log stream
-      const es = new EventSource(`${API}/project/${projectId}/logs`)
-
-      es.onmessage = (event) => {
+      // Start Polling for logs and status
+      const pollInterval = setInterval(async () => {
         try {
-          const { log } = JSON.parse(event.data)
-          setLogs(prev => [...prev, log])
-
-          // Pick up the deployed URL published by the build-server
-          if (log.startsWith('Deployed: ')) {
-            setPreviewUrl(log.replace('Deployed: ', '').trim())
+          const logsRes = await fetch(`${API}/logs/${projectId}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+          })
+          const logsData = await logsRes.json()
+          if (logsData.logs && logsData.logs.length > 0) {
+            // The logs are stored as stringified JSON strings in Redis, so we need to parse them
+            const parsedLogs = logsData.logs.map(l => {
+              try {
+                return JSON.parse(l).log
+              } catch {
+                return l
+              }
+            })
+            setLogs(parsedLogs)
           }
 
-          if (log.trim() === 'Done') {
-            setStatus('done')
-            es.close()
-          } else if (/^error:/i.test(log.trim())) {
-            setStatus('error')
-            es.close()
+          // Check deployment status
+          const depRes = await fetch(`${API}/deployments/${projectId}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+          })
+          const depData = await depRes.json()
+          if (depData.deployments && depData.deployments.length > 0) {
+            // Get the most recent deployment
+            const latestDep = depData.deployments[depData.deployments.length - 1]
+            if (latestDep.status === 'success') {
+              setStatus('done')
+              setPreviewUrl(latestDep.deployment_url || `https://${projectId}.web3deploy.me`)
+              clearInterval(pollInterval)
+            } else if (latestDep.status === 'failed') {
+              setStatus('error')
+              clearInterval(pollInterval)
+            }
           }
         } catch (err) {
-          console.error('SSE parse error', err)
-          setLogs(prev => [...prev, event.data])
+          console.error("Polling error:", err)
         }
-      }
+      }, 2000)
 
-      es.onerror = () => {
-        setLogs(prev => [...prev, 'Connection lost.'])
-        setStatus('error')
-        es.close()
-      }
     } catch (err) {
       setLogs(prev => [...prev, `error: ${err.message}`])
       setStatus('error')

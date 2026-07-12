@@ -19,6 +19,19 @@ const createProjectSchema = z.object({
 
 const projectsRouter = new Hono<{ Bindings: CloudflareBindings }>();
 
+projectsRouter.get('/', async (c) => {
+  const db = getDB(c.env);
+  const jwtPayload = c.get('jwtPayload') as { user_id: string };
+  const user_id = jwtPayload.user_id;
+
+  try {
+    const results = await db.select().from(projects).where(eq(projects.user_id, user_id));
+    return c.json({ projects: results });
+  } catch (error) {
+    return c.json({ error: "Failed to fetch projects" }, 500);
+  }
+});
+
 projectsRouter.post('/', zValidator('json', createProjectSchema), async (c) => {
   const body = c.req.valid('json');
   const db = getDB(c.env);
