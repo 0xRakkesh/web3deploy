@@ -135,8 +135,14 @@ export default function DeployPanel() {
         body: JSON.stringify(body),
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to start build')
+      let data;
+      try {
+        data = await res.json()
+      } catch (e) {
+        throw new Error('Server returned an invalid response. Are you authenticated?')
+      }
+      
+      if (!res.ok) throw new Error(data?.error || 'Failed to start build')
 
       // Start Polling for logs and status
       const pollInterval = setInterval(async () => {

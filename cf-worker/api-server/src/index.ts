@@ -18,8 +18,11 @@ export interface CloudflareBindings {
   UPSTASH_REDIS_REST_TOKEN: string;
 }
 
+import { cors } from "hono/cors";
+
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
+app.use('*', cors());
 app.use('*', rateLimiter);
 
 app.route('/auth', authRouter);
