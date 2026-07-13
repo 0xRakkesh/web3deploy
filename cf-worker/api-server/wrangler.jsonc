@@ -25,10 +25,10 @@
     {
       "binding": "DB",
       "database_name": "w3deploy-db",
-      "database_id": "fb5a45f5-f5db-46cb-b381-2e360f8c6b2d",
+      "database_id": "420a9a97-6f47-442e-bf0e-fad89b08f6be",
       "migrations_dir": "drizzle"
     }
-  ],
+  ]
   // "ai": {
   //   "binding": "AI"
   // },

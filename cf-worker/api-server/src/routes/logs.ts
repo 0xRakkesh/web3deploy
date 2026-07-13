@@ -1,20 +1,20 @@
 import { Hono } from "hono";
-import { CloudflareBindings } from "../index";
+import { CloudflareBindings, Variables } from "../index";
 import { getDB } from "../db";
 import { projects } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 
-const logsRouter = new Hono<{ Bindings: CloudflareBindings }>();
+const logsRouter = new Hono<{ Bindings: CloudflareBindings, Variables: Variables }>();
 
 logsRouter.get('/:projectId', async (c) => {
   const db = getDB(c.env);
   const projectId = c.req.param('projectId');
   
-  const jwtPayload = c.get('jwtPayload') as { user_id: string } | undefined;
-  const user_id = jwtPayload?.user_id;
+  const authUser = c.get('authUser') as { user_id: string } | undefined;
+  const user_id = authUser?.user_id;
 
   try {
-    const [project] = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.user_id, user_id!)));
+    const [project] = await db.select().from(projects).where(and(eq(projects.project_id, projectId), eq(projects.user_id, user_id!)));
     if (!project) {
        return c.json({ error: "Forbidden: You do not own this project or it does not exist." }, 403);
     }

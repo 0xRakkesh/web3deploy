@@ -1,28 +1,28 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { CloudflareBindings } from "../index";
+import { CloudflareBindings, Variables } from "../index";
 import { getDB } from "../db";
-import { projects, deployments, users } from "../db/schema";
+import { projects, deployments } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 const createProjectSchema = z.object({
   project_id: z.string().min(3).max(15),
   github_repo: z.string().url(),
-  framework: z.string(),
-  build_command: z.string(),
-  install_command: z.string(),
-  output_dir: z.string(),
+  framework: z.string().optional().default(''),
+  build_command: z.string().optional().default(''),
+  install_command: z.string().optional().default(''),
+  output_dir: z.string().optional().default(''),
   root_dir: z.string().optional().default('/'),
   env_vars: z.record(z.string(), z.string()).optional(),
 });
 
-const projectsRouter = new Hono<{ Bindings: CloudflareBindings }>();
+const projectsRouter = new Hono<{ Bindings: CloudflareBindings, Variables: Variables }>();
 
 projectsRouter.get('/', async (c) => {
   const db = getDB(c.env);
-  const jwtPayload = c.get('jwtPayload') as { user_id: string };
-  const user_id = jwtPayload.user_id;
+  const authUser = c.get('authUser') as { user_id: string };
+  const user_id = authUser.user_id;
 
   try {
     const results = await db.select().from(projects).where(eq(projects.user_id, user_id));
@@ -35,15 +35,11 @@ projectsRouter.get('/', async (c) => {
 projectsRouter.post('/', zValidator('json', createProjectSchema), async (c) => {
   const body = c.req.valid('json');
   const db = getDB(c.env);
-  
-  const jwtPayload = c.get('jwtPayload') as { user_id: string };
-  const user_id = jwtPayload.user_id;
+
+  const authUser = c.get('authUser') as { user_id: string };
+  const user_id = authUser.user_id;
 
   try {
-    const [existingUser] = await db.select().from(users).where(eq(users.id, user_id));
-    if (!existingUser) {
-      return c.json({ error: "Invalid user: This user does not exist in our database." }, 404);
-    }
 
     if (!body.github_repo.startsWith("https://github.com/")) {
       return c.json({ error: "Invalid repository: Only github.com URLs are allowed." }, 400);
@@ -118,8 +114,8 @@ projectsRouter.post('/', zValidator('json', createProjectSchema), async (c) => {
     } else {
       console.warn("[deploy] Missing GITHUB_TOKEN in env! Build will not be triggered.");
     }
-    
-    return c.json({ 
+
+    return c.json({
       message: "Project created successfully!",
       project,
       deployment

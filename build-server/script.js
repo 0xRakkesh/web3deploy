@@ -19,11 +19,11 @@ const PROJECT_ROOT = ROOT_DIR
     : path.join(__dirname, 'output')
 
 const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID
-const API_SERVICE_TOKEN = process.env.API_SERVICE_TOKEN
+const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY
 const API_SERVER_URL = process.env.API_SERVER_URL
 
 async function updateDeploymentStatus(status, deployedUrl = null) {
-    if (!DEPLOYMENT_ID || !API_SERVICE_TOKEN || !API_SERVER_URL) return
+    if (!DEPLOYMENT_ID || !CLERK_SECRET_KEY || !API_SERVER_URL) return
     try {
         // Strip trailing slash if present on API_SERVER_URL
         const baseUrl = API_SERVER_URL.endsWith('/') ? API_SERVER_URL.slice(0, -1) : API_SERVER_URL
@@ -31,7 +31,7 @@ async function updateDeploymentStatus(status, deployedUrl = null) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${CLERK_SECRET_KEY}`
             },
             body: JSON.stringify({
                 status,

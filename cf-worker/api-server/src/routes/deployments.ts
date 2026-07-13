@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { CloudflareBindings } from "../index";
+import { CloudflareBindings, Variables } from "../index";
 import { getDB } from "../db";
 import { deployments, projects } from "../db/schema";
 import { eq, and } from "drizzle-orm";
@@ -12,22 +12,22 @@ const updateDeploymentSchema = z.object({
   logs: z.string().optional(),
 });
 
-const deploymentsRouter = new Hono<{ Bindings: CloudflareBindings }>();
+const deploymentsRouter = new Hono<{ Bindings: CloudflareBindings, Variables: Variables }>();
 
 deploymentsRouter.get('/:projectId', async (c) => {
   const db = getDB(c.env);
   const projectId = c.req.param('projectId');
   
-  const jwtPayload = c.get('jwtPayload') as { user_id: string };
-  const user_id = jwtPayload.user_id;
+  const authUser = c.get('authUser') as { user_id: string };
+  const user_id = authUser.user_id;
 
   try {
-    const [project] = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.user_id, user_id)));
+    const [project] = await db.select().from(projects).where(and(eq(projects.project_id, projectId), eq(projects.user_id, user_id)));
     if (!project) {
        return c.json({ error: "Forbidden: You do not own this project or it does not exist." }, 403);
     }
 
-    const results = await db.select().from(deployments).where(eq(deployments.project_id, projectId));
+    const results = await db.select().from(deployments).where(eq(deployments.project_id, project.id));
     return c.json({ deployments: results });
   } catch (error) {
     return c.json({ error: "Failed to fetch deployments" }, 500);
@@ -39,8 +39,8 @@ deploymentsRouter.patch('/:id', zValidator('json', updateDeploymentSchema), asyn
   const db = getDB(c.env);
   const deploymentId = c.req.param('id');
   
-  const jwtPayload = c.get('jwtPayload') as { user_id: string } | undefined;
-  const user_id = jwtPayload?.user_id;
+  const authUser = c.get('authUser') as { user_id: string } | undefined;
+  const user_id = authUser?.user_id;
 
   try {
     let updatedDeployment;

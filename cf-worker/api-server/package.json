@@ -10,6 +10,7 @@
     "db:up:prod": "wrangler d1 migrations apply w3deploy-db --remote"
   },
   "dependencies": {
+    "@clerk/backend": "^3.11.4",
     "@hono/zod-validator": "^0.8.0",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.28",

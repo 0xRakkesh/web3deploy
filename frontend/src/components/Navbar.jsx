@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { animate } from 'animejs'
 import { Link, useNavigate } from 'react-router-dom'
-import { clearAuthentication, isAuthenticated, subscribeAuthChanges } from '../auth'
+import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
 import './Navbar.css'
 
 export default function Navbar() {
   const navRef = useRef(null)
-  const navigate = useNavigate()
-  const [signedIn, setSignedIn] = useState(isAuthenticated())
 
   useEffect(() => {
     if (navRef.current) {
@@ -24,25 +22,10 @@ export default function Navbar() {
       navRef.current?.classList.toggle('nav--scrolled', window.scrollY > 40)
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    const unsubscribeAuth = subscribeAuthChanges(() => {
-      setSignedIn(isAuthenticated())
-    })
-
     return () => {
       window.removeEventListener('scroll', onScroll)
-      unsubscribeAuth()
     }
   }, [])
-
-  const handleAuthClick = () => {
-    if (signedIn) {
-      clearAuthentication()
-      navigate('/', { replace: true })
-      return
-    }
-
-    navigate('/login')
-  }
 
   return (
     <nav className="nav" ref={navRef} style={{ opacity: 0 }}>
@@ -56,9 +39,16 @@ export default function Navbar() {
         <div className="nav__links">
           <Link to="/deploy" className="nav__link">Deploy</Link>
           <Link to="/deployments" className="nav__link">Deployments</Link>
-          <button type="button" className="nav__link nav__link--login nav__link--action" onClick={handleAuthClick}>
-            {signedIn ? 'Logout' : 'Login'}
-          </button>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button type="button" className="nav__link nav__link--login nav__link--action">
+                Login
+              </button>
+            </SignInButton>
+          </SignedOut>
         </div>
       </div>
     </nav>

@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, RefreshCw, ArrowUpRight } from 'lucide-react'
 import { animate, stagger } from 'animejs'
-import { getToken } from '../auth'
+import { useAuth } from '@clerk/clerk-react'
 import './DeployPanel.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:9000'
 
 export default function DeployPanel() {
+  const { getToken } = useAuth()
   const [projectId, setProjectId] = useState('')
   const [repoUrl, setRepoUrl] = useState('')
   const [rootDir, setRootDir] = useState('')
@@ -126,11 +127,12 @@ export default function DeployPanel() {
         }
       }
 
+      const token = await getToken()
       const res = await fetch(`${API}/projects`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(body),
       })
@@ -147,8 +149,9 @@ export default function DeployPanel() {
       // Start Polling for logs and status
       const pollInterval = setInterval(async () => {
         try {
+          const token = await getToken()
           const logsRes = await fetch(`${API}/logs/${projectId}`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+            headers: { 'Authorization': `Bearer ${token}` }
           })
           const logsData = await logsRes.json()
           if (logsData.logs && logsData.logs.length > 0) {
@@ -164,8 +167,9 @@ export default function DeployPanel() {
           }
 
           // Check deployment status
+          const depToken = await getToken()
           const depRes = await fetch(`${API}/deployments/${projectId}`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+            headers: { 'Authorization': `Bearer ${depToken}` }
           })
           const depData = await depRes.json()
           if (depData.deployments && depData.deployments.length > 0) {
