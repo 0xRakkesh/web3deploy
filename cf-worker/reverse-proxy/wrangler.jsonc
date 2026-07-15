@@ -37,7 +37,6 @@
   // }
   "vars": {
     "AWS_REGION": "ap-south-1",
-    "AWS_ACCESS_KEY_ID": "AKIA4GV7EHYVRT2LLN73",
     "BUCKET_NAME": "s3-web3deploy"
   }
 }

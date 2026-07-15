@@ -1,0 +1,25 @@
+{
+  "name": "web3deploy",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "boxen": "^8.0.1",
+    "commander": "^15.0.0",
+    "conf": "^15.1.0",
+    "open": "^11.0.0",
+    "ora": "^9.4.1",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}
