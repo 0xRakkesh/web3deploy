@@ -4,9 +4,9 @@ type ConfigSchema = {
   token: string | undefined;
 };
 
-// Initialize config for web3deploy CLI
+// Initialize config for w3deploy CLI
 export const config = new Conf<ConfigSchema>({
-  projectName: 'web3deploy-cli',
+  projectName: 'w3deploy-cli',
   defaults: {
     token: undefined,
   },

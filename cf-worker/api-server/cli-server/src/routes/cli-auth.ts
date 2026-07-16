@@ -171,7 +171,7 @@ cliAuthRouter.get("/github/callback", async (c) => {
 			email: githubEmail,
 			login: userData.login,
 			avatar_url: userData.avatar_url,
-			updated_at: new Date(),
+			updated_at: new Date().toLocaleString(),
 		}
 	});
 
@@ -180,7 +180,7 @@ cliAuthRouter.get("/github/callback", async (c) => {
 	await db.insert(sessions).values({
 		id: jti,
 		user_id: githubUserId,
-		expires_at: new Date(Date.now() + JWT_EXPIRY_SECONDS * 1000),
+		expires_at: new Date(Date.now() + JWT_EXPIRY_SECONDS * 1000).toLocaleString(),
 	});
 
 	// Sign a long-lived CLI JWT (90 days)
@@ -226,7 +226,7 @@ cliAuthRouter.post("/logout", async (c) => {
 		const jti = payload.jti as string;
 		if (jti) {
 			const db = getDB(c.env);
-			await db.update(sessions).set({ revoked_at: new Date() }).where(eq(sessions.id, jti));
+			await db.update(sessions).set({ revoked_at: new Date().toLocaleString() }).where(eq(sessions.id, jti));
 		}
 		return c.json({ success: true });
 	} catch (e) {

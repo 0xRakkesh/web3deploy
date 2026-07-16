@@ -2,9 +2,11 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { jwt } from "hono/jwt";
 import { cliAuthRouter } from "./routes/cli-auth";
-import { cliVerifyRouter } from "./routes/cli-verify";
-import { getDB } from "./db";
-import { sessions } from "./db/schema";
+import { cliVerifyRouter } from "./routes/cli-verify.js";
+import { cliDeployRouter } from "./routes/cli-deploy.js";
+import { cliProjectsRouter } from "./routes/cli-projects.js";
+import { getDB } from "./db/index.js";
+import { sessions } from "./db/schema.js";
 import { eq } from "drizzle-orm";
 
 export interface CloudflareBindings {
@@ -13,6 +15,11 @@ export interface CloudflareBindings {
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
   JWT_SECRET: string;
+  S3_ACCESS_KEY_ID: string;
+  S3_SECRET_ACCESS_KEY: string;
+  S3_ENDPOINT: string;
+  S3_BUCKET_NAME: string;
+  S3_REGION: string;
 }
 
 export type Variables = {
@@ -69,5 +76,11 @@ app.use('/api/*', async (c, next) => {
   c.set('authUser', { user_id: session.user_id });
   return next();
 });
+
+// CLI Deployment endpoints (Protected by JWT)
+app.route('/api/cli/deploy', cliDeployRouter as any);
+
+// CLI Projects endpoints (Protected by JWT)
+app.route('/api/cli/projects', cliProjectsRouter as any);
 
 export default app;

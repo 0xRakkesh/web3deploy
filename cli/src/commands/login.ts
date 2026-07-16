@@ -34,10 +34,22 @@ export default async function login() {
 
     s.message('Waiting for browser authentication...');
 
-    // Poll every 3 seconds
+    // Variable polling to reduce API requests
     let token: string | null = null;
+    let pollAttempts = 0;
+    
     while (!token) {
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      pollAttempts++;
+      
+      // Variable backoff logic to save Cloudflare Worker invocations
+      let delay = 3000; // default 3 seconds for the first 30 seconds
+      if (pollAttempts > 10 && pollAttempts <= 20) { 
+        delay = 5000; // 5 seconds after 30s
+      } else if (pollAttempts > 20) { 
+        delay = 10000; // 10 seconds after 80s
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
 
       const pollRes = await fetch(`${API_URL}/api/cli/auth/poll`, {
         method: 'POST',
