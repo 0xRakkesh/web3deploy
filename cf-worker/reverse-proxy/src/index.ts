@@ -108,10 +108,24 @@ app.on(['GET', 'HEAD'], "*", async (c) => {
       
       let isHtmlFallback = false
       const looksLikeAsset = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|txt|map)$/.test(path.toLowerCase()) && path !== "/index.html"
+      
       if (response.status === 404 && !looksLikeAsset) {
-        s3url = `https://${c.env.BUCKET_NAME}.s3.${c.env.AWS_REGION}.amazonaws.com/__outputs/${projectID}/index.html`
-        response = await aws.fetch(s3url, fetchOpts)
-        isHtmlFallback = true
+        const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
+        const baseUrl = `https://${c.env.BUCKET_NAME}.s3.${c.env.AWS_REGION}.amazonaws.com/__outputs/${projectID}`;
+        
+        // 1. Try exact path + ".html" (for plain HTML sites)
+        response = await aws.fetch(`${baseUrl}${cleanPath}.html`, fetchOpts);
+        isHtmlFallback = true;
+        
+        // 2. Try exact path + "/index.html" (for Static Site Generators like Next.js/Astro)
+        if (response.status === 404) {
+          response = await aws.fetch(`${baseUrl}${cleanPath}/index.html`, fetchOpts);
+        }
+
+        // 3. Fallback to root index (for SPAs like React/Vue)
+        if (response.status === 404) {
+          response = await aws.fetch(`${baseUrl}/index.html`, fetchOpts);
+        }
       }
       
       if (!response.ok) {

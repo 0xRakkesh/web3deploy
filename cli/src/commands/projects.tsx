@@ -3,7 +3,7 @@ import { render, Box, Text, useInput, useApp } from 'ink';
 import { config as conf } from '../config.js';
 import pc from 'picocolors';
 
-const API_URL = process.env.W3DEPLOY_API_URL || 'http://localhost:8787';
+const API_URL = process.env.W3DEPLOY_API_URL || 'https://api-server.rakesh904664.workers.dev';
 const W = 60;
 const INNER = W - 6; // 2 border + 2×2 paddingX = 54
 

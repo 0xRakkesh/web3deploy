@@ -1,5 +1,5 @@
 
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 
 export const projects = sqliteTable('projects', {
 	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -10,7 +10,9 @@ export const projects = sqliteTable('projects', {
 	deployment_url: text('deployment_url').unique(),
 	created_at: text('created_at').$defaultFn(() => new Date().toLocaleString()),
 	updated_at: text('updated_at').$defaultFn(() => new Date().toLocaleString()),
-});
+}, (table) => ({
+	userIdIdx: index('user_id_idx').on(table.user_id),
+}));
 
 export const domains = sqliteTable('domains', {
 	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),

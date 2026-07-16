@@ -3,7 +3,7 @@ import { intro, confirm, outro, cancel, isCancel } from '@clack/prompts';
 import { config } from '../config.js';
 import boxen from 'boxen';
 
-const API_URL = process.env.W3DEPLOY_API_URL || 'http://localhost:8787';
+const API_URL = process.env.W3DEPLOY_API_URL || 'https://api-server.rakesh904664.workers.dev';
 
 export default async function logout() {
   console.log('');

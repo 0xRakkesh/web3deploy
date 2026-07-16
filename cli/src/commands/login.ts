@@ -4,7 +4,7 @@ import open from 'open';
 
 import { config } from '../config.js';
 
-const API_URL = process.env.W3DEPLOY_API_URL || 'http://localhost:8787';
+const API_URL = process.env.W3DEPLOY_API_URL || 'https://api-server.rakesh904664.workers.dev';
 
 export default async function login() {
   console.log('')

@@ -8,7 +8,7 @@ import { config as conf } from '../config.js';
 import { render } from 'ink';
 import { Dashboard } from '../ui/Dashboard.js';
 
-const API_URL = process.env.W3DEPLOY_API_URL || 'http://localhost:8787';
+const API_URL = process.env.W3DEPLOY_API_URL || 'https://api-server.rakesh904664.workers.dev';
 const CONFIG_FILE = 'w3deploy.json';
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024; // 20 MB
 
