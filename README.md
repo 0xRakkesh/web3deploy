@@ -2,7 +2,7 @@
 
 > Deploy any static website or front-end app to the cloud in seconds — straight from your terminal.
 
-<div align="center">
+<div>
   <a href="https://youtu.be/OJKyzVEUqhA">
     <img src="thumbnail.png" alt="w3deploy Video Tutorial" width="720">
   </a>
