@@ -3,7 +3,9 @@
 > Deploy any static website or front-end app to the cloud in seconds — straight from your terminal.
 
 <div align="center">
-  <iframe width="720" height="405" src="https://www.youtube.com/embed/OJKyzVEUqhA?autoplay=1&loop=1&playlist=OJKyzVEUqhA&mute=1&controls=0" title="w3deploy Video Tutorial" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  <a href="https://youtu.be/OJKyzVEUqhA">
+    <img src="https://img.youtube.com/vi/OJKyzVEUqhA/maxresdefault.jpg" alt="w3deploy Video Tutorial" width="720">
+  </a>
 </div>
 
 **w3deploy** is a developer tool (CLI + backend) that lets you deploy static websites to a global CDN with a single command. It's similar to Vercel or Netlify, but open-source and self-hostable. It supports everything from a plain `index.html` file to complex React, Vue, and Next.js applications.
