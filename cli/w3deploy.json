@@ -1,0 +1,11 @@
+{
+  "projectName": "cli",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "framework": null,
+  "packageManager": "npm",
+  "env": {
+    "google_env": "rakesh"
+  }
+}

@@ -38,9 +38,13 @@ function addLog(log: string) {
 }
 
 // Helper to run commands and stream output
-function runCommand(command: string, cwd: string, stepName: string): Promise<void> {
+function runCommand(command: string, cwd: string, stepName: string, envOverrides: Record<string, string> = {}): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, { cwd, shell: true });
+    const child = spawn(command, { 
+      cwd, 
+      shell: true,
+      env: { ...process.env, ...envOverrides }
+    });
 
     child.stdout?.on('data', (data) => {
       const lines = data.toString().split('\n').filter(Boolean);
@@ -94,7 +98,7 @@ export default async function deploy() {
     process.exit(1);
   }
 
-  const { projectName, outputDirectory, installCommand, buildCommand } = config;
+  const { projectName, outputDirectory, installCommand, buildCommand, env = {} } = config;
 
   if (!projectName || !outputDirectory || !installCommand || !buildCommand) {
     console.error(pc.redBright(`❌ Error: ${CONFIG_FILE} is missing required fields.`));
@@ -121,7 +125,7 @@ export default async function deploy() {
   // 2. Install Dependencies
   try {
     addLog(`Running: ${installCommand}`);
-    await runCommand(installCommand, process.cwd(), 'Install step');
+    await runCommand(installCommand, process.cwd(), 'Install step', env);
     addLog('Dependencies installed successfully.');
   } catch (error: any) {
     if (inkInstance) inkInstance.unmount();
@@ -133,7 +137,7 @@ export default async function deploy() {
   updateDashboard({ status: 'Building...' });
   try {
     addLog(`Running: ${buildCommand}`);
-    await runCommand(buildCommand, process.cwd(), 'Build step');
+    await runCommand(buildCommand, process.cwd(), 'Build step', env);
     addLog('Project built successfully.');
   } catch (error: any) {
     if (inkInstance) inkInstance.unmount();
@@ -168,6 +172,15 @@ export default async function deploy() {
       size: stat.size,
       contentType
     };
+  });
+
+  const configStat = fs.statSync(configPath);
+  totalSize += configStat.size;
+  uploadManifest.push({
+    localPath: configPath,
+    path: '_w3deploy.json',
+    size: configStat.size,
+    contentType: 'application/json'
   });
 
   addLog(`Found ${uploadManifest.length} files (${(totalSize / 1024 / 1024).toFixed(2)} MB).`);

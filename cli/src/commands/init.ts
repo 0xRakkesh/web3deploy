@@ -136,7 +136,7 @@ export default async function init() {
   }
 
   const defaultProjectName = path.basename(process.cwd());
-  
+
   const projectName = await p.text({
     message: 'What is your project name?',
     placeholder: defaultProjectName,
@@ -223,13 +223,128 @@ export default async function init() {
     process.exit(0);
   }
 
+  const hasEnvVars = await p.confirm({
+    message: 'Do you have any environment variables for your project?',
+    initialValue: false
+  });
+
+  if (p.isCancel(hasEnvVars)) {
+    p.outro(pc.redBright('Operation cancelled.'));
+    process.exit(0);
+  }
+
+  let envVars: Record<string, string> = {};
+
+  if (hasEnvVars) {
+    p.note(pc.yellow('Public variables only. Do NOT enter secrets.'), pc.red('Important'));
+
+    const numVarsStr = await p.text({
+      message: 'How many environment variables do you have?',
+      validate: (value) => {
+        if (!value || !/^\d+$/.test(value) || parseInt(value) <= 0) return 'Please enter a valid positive number';
+      }
+    });
+
+    if (p.isCancel(numVarsStr)) {
+      p.outro(pc.redBright('Operation cancelled.'));
+      process.exit(0);
+    }
+
+    const numVars = parseInt(numVarsStr as string);
+
+    for (let i = 0; i < numVars; i++) {
+      const name = await p.text({
+        message: `Variable ${i + 1} Name:`,
+        validate: (value) => {
+          if (!value || !value.trim()) return 'Name cannot be empty';
+        }
+      });
+
+      if (p.isCancel(name)) {
+        p.outro(pc.redBright('Operation cancelled.'));
+        process.exit(0);
+      }
+
+      const val = await p.text({
+        message: `Variable ${i + 1} Value:`,
+      });
+
+      if (p.isCancel(val)) {
+        p.outro(pc.redBright('Operation cancelled.'));
+        process.exit(0);
+      }
+
+      envVars[(name as string).trim()] = (val as string).trim();
+    }
+  }
+
+  let rewrites: { source: string, destination: string }[] = [];
+
+  const hasRewrites = await p.confirm({
+    message: 'Do you want to configure API rewrites/proxies (to avoid CORS)?',
+    initialValue: false
+  });
+
+  if (p.isCancel(hasRewrites)) {
+    p.outro(pc.redBright('Operation cancelled.'));
+    process.exit(0);
+  }
+
+  if (hasRewrites) {
+    p.note(pc.yellow('Example: Source: /api/* -> Destination: https://api.mybackend.com/*'), pc.cyan('Rewrites'));
+
+    const numRewritesStr = await p.text({
+      message: 'How many rewrite rules do you want to add?',
+      validate: (value) => {
+        if (!value || !/^\d+$/.test(value) || parseInt(value) <= 0) return 'Please enter a valid positive number';
+      }
+    });
+
+    if (p.isCancel(numRewritesStr)) {
+      p.outro(pc.redBright('Operation cancelled.'));
+      process.exit(0);
+    }
+
+    const numRewrites = parseInt(numRewritesStr as string);
+
+    for (let i = 0; i < numRewrites; i++) {
+      const source = await p.text({
+        message: `Rewrite ${i + 1} Source (e.g., /api/*):`,
+        validate: (value) => {
+          if (!value || !value.trim()) return 'Source cannot be empty';
+        }
+      });
+
+      if (p.isCancel(source)) {
+        p.outro(pc.redBright('Operation cancelled.'));
+        process.exit(0);
+      }
+
+      const destination = await p.text({
+        message: `Rewrite ${i + 1} Destination (e.g., https://backend.com/*):`,
+        validate: (value) => {
+          if (!value || !value.trim()) return 'Destination cannot be empty';
+        }
+      });
+
+      if (p.isCancel(destination)) {
+        p.outro(pc.redBright('Operation cancelled.'));
+        process.exit(0);
+      }
+
+      rewrites.push({ source: (source as string).trim(), destination: (destination as string).trim() });
+    }
+  }
+
   const config = {
     projectName,
     outputDirectory,
     installCommand,
     buildCommand,
     framework: selectedFrameworkName !== 'other' ? selectedFrameworkName : null,
-    packageManager: packageManager.name
+    packageManager: packageManager.name,
+    env: envVars,
+    rewrites
   };
 
   fs.writeFileSync(
