@@ -5,7 +5,7 @@ Follow these steps if you want to run your own instance of w3deploy.
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/w3deploy.git
+git clone https://github.com/0xRakkesh/w3deploy.git
 cd w3deploy
 ```
 
